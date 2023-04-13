@@ -100,6 +100,7 @@ type MessageVoice struct {
 	Message
 	MsgId       string
 	Format      string
+	MediaId      string
 	Recognition string
 }
 

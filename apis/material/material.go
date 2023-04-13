@@ -21,7 +21,7 @@ import (
 	"mime/multipart"
 	"net/url"
 	"os"
-
+	"encoding/json"
 	"github.com/fastwego/offiaccount"
 )
 
@@ -79,6 +79,38 @@ func MediaUpload(ctx *offiaccount.OffiAccount, media string, params url.Values) 
 
 	return ctx.Client.HTTPPost(apiMediaUpload+"?"+params.Encode(), body, writer.FormDataContentType())
 }
+type MediaUploadByContentsReply struct {
+	Type      string        `json:"type"`
+	MediaId   string        `json:"media_id"`
+	CreatedAt int           `json:"created_at"`
+	Item      []interface{} `json:"item"`
+}
+
+func MediaUploadByContents(ctx *offiaccount.OffiAccount,fileName string,fileContents []byte, params url.Values) (reply *MediaUploadByContentsReply, err error) {
+	body := new(bytes.Buffer)
+	writer := multipart.NewWriter(body)
+	part, err := writer.CreateFormFile("media", fileName)
+	if err != nil {
+		return
+	}
+	part.Write(fileContents)
+
+	err = writer.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := ctx.Client.HTTPPost(apiMediaUpload+"?"+params.Encode(), body, writer.FormDataContentType())
+	if err!=nil{
+		return nil,err
+	}
+	reply = new(MediaUploadByContentsReply)
+	if err = json.Unmarshal(resp, reply);err!=nil{
+		return nil,err
+	}
+	return reply,nil
+}
+
 
 /*
 获取临时素材
@@ -89,8 +121,8 @@ See: https://developers.weixin.qq.com/doc/offiaccount/Asset_Management/Get_tempo
 
 GET https://api.weixin.qq.com/cgi-bin/media/get?access_token=ACCESS_TOKEN&media_id=MEDIA_ID
 */
-func MediaGet(ctx *offiaccount.OffiAccount) (resp []byte, err error) {
-	return ctx.Client.HTTPGet(apiMediaGet)
+func MediaGet(ctx *offiaccount.OffiAccount,mediaId string) (resp []byte, err error) {
+	return ctx.Client.HTTPGet(apiMediaGet+"?"+"media_id="+mediaId)
 }
 
 /*

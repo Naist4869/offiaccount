@@ -62,7 +62,7 @@ func (s *Server) EchoStr(writer http.ResponseWriter, request *http.Request) {
 }
 
 // ParseXML 解析微信推送过来的消息/事件
-func (s *Server) ParseXML(body []byte) (m interface{}, err error) {
+func (s *Server) ParseXML(body []byte) (m interface{},message messagetype.Message, err error) {
 
 	if s.Ctx.Logger != nil {
 		s.Ctx.Logger.Println(string(body))
@@ -90,7 +90,7 @@ func (s *Server) ParseXML(body []byte) (m interface{}, err error) {
 
 	}
 
-	message := messagetype.Message{}
+	message = messagetype.Message{}
 	err = xml.Unmarshal(body, &message)
 	//fmt.Println(message)
 	if err != nil {
@@ -104,58 +104,60 @@ func (s *Server) ParseXML(body []byte) (m interface{}, err error) {
 		if err != nil {
 			return
 		}
-		return msg, nil
+		return msg, message,nil
 	case messagetype.MsgTypeImage:
 		msg := messagetype.MessageImage{}
 		err = xml.Unmarshal(body, &msg)
 		if err != nil {
 			return
 		}
-		return msg, nil
+		return msg, message,nil
 	case messagetype.MsgTypeVoice:
 		msg := messagetype.MessageVoice{}
 		err = xml.Unmarshal(body, &msg)
 		if err != nil {
 			return
 		}
-		return msg, nil
+		return msg, message,nil
 	case messagetype.MsgTypeVideo:
 		msg := messagetype.MessageVideo{}
 		err = xml.Unmarshal(body, &msg)
 		if err != nil {
 			return
 		}
-		return msg, nil
+		return msg, message,nil
 	case messagetype.MsgTypeShortVideo:
 		msg := messagetype.MessageShortVideo{}
 		err = xml.Unmarshal(body, &msg)
 		if err != nil {
 			return
 		}
-		return msg, nil
+		return msg, message,nil
 	case messagetype.MsgTypeLocation:
 		msg := messagetype.MessageLocation{}
 		err = xml.Unmarshal(body, &msg)
 		if err != nil {
 			return
 		}
-		return msg, nil
+		return msg, message,nil
 	case messagetype.MsgTypeLink:
 		msg := messagetype.MessageLink{}
 		err = xml.Unmarshal(body, &msg)
 		if err != nil {
 			return
 		}
-		return msg, nil
+		return msg, message,nil
 	case messagetype.MsgTypeFile:
 		msg := messagetype.MessageFile{}
 		err = xml.Unmarshal(body, &msg)
 		if err != nil {
 			return
 		}
-		return msg, nil
+		return msg, message,nil
 	case messagetype.MsgTypeEvent:
-		return parseEvent(body)
+		var event interface{}
+		event, err = parseEvent(body)
+		return event, message, err
 	}
 	return
 }
